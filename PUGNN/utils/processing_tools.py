@@ -91,6 +91,8 @@ def to_heterodata(nodes:dict, edges:dict, weights:dict, features, labels):
 
 
 def to_data(x, edges, weights, features, labels, momentum_con=False):
+    # Remove the last column of the input x
+    x = x[:, :-1]
     x, features = extend_features(torch.from_numpy(x), features[0][0])
 
     if momentum_con:
@@ -187,6 +189,25 @@ def remove_inf_node(node_features, edge_index, edge_attributes):
         edge_attributes = np.delete(edge_attributes, edge, axis=0)
     
     return node_features, edge_index, edge_attributes
+
+def edges_threshold(edge_index, edge_attributes, threshold=0.1):
+    """
+    Remove edges with attributes greater than a specified threshold.
+
+    Args:
+        edge_index (np.array): Array of shape (2, E) representing the edge indices.
+        edge_attributes (np.array): Array of shape (E,) representing the edge attributes.
+        threshold (float): Threshold value for removing edges (default: 0.1).
+
+    Returns:
+        Tuple[np.array, np.array]: Updated edge index and edge attributes.
+    """
+    edge_mask = edge_attributes > threshold
+
+    edge_index = np.delete(edge_index, np.where(edge_mask), axis=1)
+    edge_attributes = np.delete(edge_attributes, np.where(edge_mask))
+
+    return edge_index, edge_attributes
 
 def extend_features(x, nv):
     graph_features = [nv]
