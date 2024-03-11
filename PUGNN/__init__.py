@@ -1,5 +1,5 @@
 from .base import BaseDataReader, BaseDataset, BaseDataloader, BaseTrainer, BaseAnalyzer
-from .utils.processing_tools import get_data, to_data, get_batch
+from .utils.processing_tools import get_data, to_data, get_batch, edges_threshold
 from .utils.preprocessing_tools import check_and_summarize
 from .utils.postprocessing_tools import llikelihood_pois, max_log_likelihood
 from collections import namedtuple
@@ -38,14 +38,18 @@ class HomoDataReader(BaseDataReader):
                 
         has_nan, res1 = self.remove_nan_nodes(node_features, edge_index, edge_attrs)
         has_inf, res2 = self.remove_inf_nodes(node_features, edge_index, edge_attrs)
+        
         if has_nan:
-                node_features, edge_index, edge_attrs = res1
-                if log:
-                    print("'{}' : 'PU={}' : 'E{}' : nan".format(path_to_file, group, index), file=sys.stderr)
+            node_features, edge_index, edge_attrs = res1
+            if log:
+                print("'{}' : 'PU={}' : 'E{}' : nan".format(path_to_file, group, index), file=sys.stderr)
         if has_inf:
-                node_features, edge_index, edge_attrs = res2
-                if log:
-                    print("'{}' : 'PU={}' : 'E{}' : inf".format(path_to_file, group, index), file=sys.stderr)
+            node_features, edge_index, edge_attrs = res2
+            if log:
+                print("'{}' : 'PU={}' : 'E{}' : inf".format(path_to_file, group, index), file=sys.stderr)
+        
+        edge_index, edge_attrs = edges_threshold(edge_index, edge_attrs, threshold=0.1)
+        
         try:
             return to_data(node_features, edge_index, edge_attrs, features, labels)
         except Exception as e:
