@@ -5,6 +5,7 @@ from .utils.postprocessing_tools import llikelihood_pois, max_log_likelihood
 from collections import namedtuple
 from tqdm.notebook import trange, tqdm
 
+
 import plotly
 import plotly.express as px
 import plotly.graph_objects as go
